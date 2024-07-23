@@ -1,23 +1,29 @@
 import React, { useEffect, useState, useRef } from "react";
-import { MapContainer, TileLayer, Marker, Polyline, useMap } from "react-leaflet";
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  Polyline,
+  useMap,
+} from "react-leaflet";
 import L, { LatLngExpression, LatLngTuple } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "leaflet-routing-machine";
 import "tailwindcss/tailwind.css";
 import { useSocket } from "./SocketProvider";
-import callIcon from '../assets/icon/phone.png';
-import locationIcon from '../assets/icon/location.png';
-import calendarIcon from '../assets/icon/calendar.png';
-import messageIcon from '../assets/icon/message.png';
-import profileIcon from '../assets/icon/Profile.png';
-import vectorIcon from '../assets/icon/Vector.png'
+import callIcon from "../assets/icon/phone.png";
+import locationIcon from "../assets/icon/location.png";
+import calendarIcon from "../assets/icon/calendar.png";
+import messageIcon from "../assets/icon/message.png";
+import profileIcon from "../assets/icon/Profile.png";
+import vectorIcon from "../assets/icon/Vector.png";
 
 // mock data
 const mockData = {
   deliveryPerson: {
     name: "Sarfy Soudagar",
     company: "Jim's Fencing Mooroolbark",
-    imageUrl: '', // Add image URL if available
+    imageUrl: "", // Add image URL if available
   },
   address: "Switchback Rd, Chirnside Park VIC 3116, Australia",
   scheduledTime: "11:30 AM - 12:30 PM",
@@ -26,7 +32,7 @@ const mockData = {
 
 const containerStyle = {
   width: "100%",
-  height: "60%",
+  height: "70%",
 };
 
 const carIcon = (angle: number) => {
@@ -359,6 +365,20 @@ const carIcon = (angle: number) => {
   });
 };
 
+const startIcon = new L.DivIcon({
+  html: `<svg width="15" height="15" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+<circle cx="5" cy="5" r="5" fill="#333333"/>
+</svg>`,
+  className: "custom-start-icon",
+});
+
+const endIcon = new L.DivIcon({
+  html: `<svg width="15" height=15" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+<circle cx="5" cy="5" r="5" fill="#333333"/>
+</svg>`,
+  className: "custom-end-icon",
+});
+
 // Function to calculate the angle between two points
 const calculateAngle = (prevPos: LatLngTuple, currPos: LatLngTuple) => {
   const [lat1, lng1] = prevPos;
@@ -368,7 +388,11 @@ const calculateAngle = (prevPos: LatLngTuple, currPos: LatLngTuple) => {
 };
 
 // Component to handle the route calculation and polyline drawing
-const RouteFinder: React.FC<{ origin: LatLngTuple; destination: LatLngTuple; setRoutePath: (path: LatLngTuple[]) => void }> = ({ origin, destination, setRoutePath }) => {
+const RouteFinder: React.FC<{
+  origin: LatLngTuple;
+  destination: LatLngTuple;
+  setRoutePath: (path: LatLngTuple[]) => void;
+}> = ({ origin, destination, setRoutePath }) => {
   const map = useMap();
   const routingControlRef = useRef<L.Routing.Control | null>(null);
 
@@ -377,14 +401,16 @@ const RouteFinder: React.FC<{ origin: LatLngTuple; destination: LatLngTuple; set
       waypoints: [L.latLng(origin), L.latLng(destination)],
       createMarker: () => null,
       routeWhileDragging: true,
-      addWaypoints: false, // Prevents adding additional waypoints
+      addWaypoints: false, // This Prevents adding additional waypoints
     }).addTo(map);
 
     routingControlRef.current.on("routesfound", function (e) {
       const routes = e.routes;
       if (routes.length > 0) {
         const route = routes[0];
-        const path = route.coordinates.map(coord => [coord.lat, coord.lng] as LatLngTuple);
+        const path = route.coordinates.map(
+          (coord) => [coord.lat, coord.lng] as LatLngTuple
+        );
         setRoutePath(path);
       }
     });
@@ -401,18 +427,23 @@ const RouteFinder: React.FC<{ origin: LatLngTuple; destination: LatLngTuple; set
   return null;
 };
 
-const MapCenterUpdater: React.FC<{ center: LatLngExpression }> = ({ center }) => {
+const MapCenterUpdater: React.FC<{ center: LatLngExpression }> = ({
+  center,
+}) => {
   const map = useMap();
 
   useEffect(() => {
-    map.flyTo(center, 16); // Adjust this zoom level if necessary
+    map.flyTo(center, 16); //  this sets the zoom level
   }, [center, map]);
 
   return null;
 };
 
 const TrackingMap: React.FC = () => {
-  const [markerPos, setMarkerPos] = useState<{ latlng: LatLngExpression; rotation: number } | null>(null);
+  const [markerPos, setMarkerPos] = useState<{
+    latlng: LatLngExpression;
+    rotation: number;
+  } | null>(null);
   const [routePath, setRoutePath] = useState<LatLngTuple[]>([]);
   const [traveledPath, setTraveledPath] = useState<LatLngTuple[]>([]);
   const [estimatedTime, setEstimatedTime] = useState<string>("");
@@ -424,10 +455,10 @@ const TrackingMap: React.FC = () => {
 
   useEffect(() => {
     if (socket) {
-      socket.on('coordinates', (data: { lat: number; lng: number }[]) => {
-        const path = data.map(coord => [coord.lat, coord.lng] as LatLngTuple);
+      socket.on("coordinates", (data: { lat: number; lng: number }[]) => {
+        const path = data.map((coord) => [coord.lat, coord.lng] as LatLngTuple);
         setRoutePath(path);
-        console.log('Coordinates received:', path); // Debug log
+        console.log("Coordinates received:", path); // Debug log
       });
     }
   }, [socket]);
@@ -440,7 +471,7 @@ const TrackingMap: React.FC = () => {
   }, [routePath]);
 
   const animateMarker = (path: LatLngTuple[]) => {
-    if (path.length === 0) return; // Add this check to prevent running if no path is available
+    if (path.length === 0) return; // this check is to prevent running if no path is available
 
     markerIndex.current = 0;
     let prevPos = path[0];
@@ -450,156 +481,156 @@ const TrackingMap: React.FC = () => {
         const angle = calculateAngle(prevPos, currPos);
         console.log("Car Icon Angle:", angle); // Log the angle to debug
         setMarkerPos({ latlng: currPos, rotation: angle });
-        setTraveledPath(prevPath => [...prevPath, currPos]);
+        setTraveledPath((prevPath) => [...prevPath, currPos]);
         prevPos = currPos;
         markerIndex.current++;
       } else {
-        clearInterval(interval); // Stop the interval once the destination is reached
-        setMarkerPos({ latlng: destination, rotation: calculateAngle(prevPos, destination) }); // Ensure the marker stops at the destination
+        clearInterval(interval); // this stops the interval once the destination is reached
+        setMarkerPos({
+          latlng: destination,
+          rotation: calculateAngle(prevPos, destination),
+        }); // Ensure the marker stops at the destination
       }
-    }, 500); 
+    }, 500);
   };
 
   return (
-    <div className="tracking-map-container flex justify-center items-center h-screen bg-gray-100">
-      <div className="relative h-full w-full max-w-screen-sm mx-auto md:h-[720px] md:w-[390px] md:rounded-lg overflow-hidden bg-white shadow-lg">
-      <MapContainer
-          center={markerPos ? markerPos.latlng : origin}
-          zoom={50}
-          style={{ ...containerStyle, zIndex: 1 }}
-          zoomControl={false} 
-          attributionControl={true}
-          >
-          <TileLayer
-            url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager_labels_under/{z}/{x}/{y}{r}.png"
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-            subdomains={['a', 'b', 'c', 'd']}
-            maxZoom={20}
-          />
-          {/* <TileLayer
-            url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}"
-            attribution='Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ, TomTom, Intermap, iPC, USGS, FAO, NPS, NRCAN, GeoBase, Kadaster NL, Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), and the GIS User Community'
-          /> */}
-{/* <TileLayer
-  url="https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.{ext}"
-  attribution='&copy; <a href="https://www.stadiamaps.com/" target="_blank">Stadia Maps</a> &copy; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-  ext='png'
-/> */}
+    <div className="tracking-map-container flex justify-center items-center h-screen bg-white">
+<div className="relative h-full w-full max-w-screen-sm mx-auto md:h-[835px] md:w-[439px] md:rounded-lg overflow-hidden bg-white shadow-lg">
+  <MapContainer
+    center={markerPos ? markerPos.latlng : origin}
+    zoom={50}
+    style={{ ...containerStyle, zIndex: 1 }}
+    zoomControl={false}
+    attributionControl={true}
+  >
+    <TileLayer
+      url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager_labels_under/{z}/{x}/{y}{r}.png"
+      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+      subdomains={["a", "b", "c", "d"]}
+      maxZoom={20}
+    />
 
-{/* <TileLayer
-  url="https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.{ext}"
-  attribution='&copy; <a href="https://www.stadiamaps.com/" target="_blank">Stadia Maps</a> &copy; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-  ext='png'
-/> */}
+    {/* Commenting out RouteFinder since we are using coordinates from the server */}
+    {/* <RouteFinder origin={origin} destination={destination} setRoutePath={setRoutePath} /> */}
+    <MapCenterUpdater center={markerPos ? markerPos.latlng : origin} />
+    {markerPos && (
+      <Marker
+        position={markerPos.latlng}
+        icon={carIcon(markerPos.rotation)}
+      />
+    )}
+    {routePath.length > 0 && (
+      <>
+        <Polyline
+          positions={routePath}
+          color="#626269"
+          weight={4}
+          opacity={0.8}
+          lineCap="round"
+        />
+        <Marker position={routePath[0]} icon={startIcon} />
+        <Marker
+          position={routePath[routePath.length - 1]}
+          icon={endIcon}
+        />
+      </>
+    )}
+    {traveledPath.length > 0 && (
+      <Polyline
+        positions={traveledPath}
+        color="#393939"
+        weight={4}
+        opacity={0.8}
+        lineCap="round"
+      />
+    )}
+  </MapContainer>
+  <div
+  className="absolute bottom-0 w-full bg-[#FFFFFF] p-4 shadow-lg z-10 h-[40%] overflow-y-auto"
+  style={{
+    fontFamily: "DM Sans, sans-serif",
+    borderTopLeftRadius: "40px",
+    borderTopRightRadius: "40px",
+    scrollbarWidth: "none", // For Firefox
+    msOverflowStyle: "none", // For Internet Explorer and Edge
+  }}
+>
+  <style>
+    {`
+      .absolute.bottom-0::-webkit-scrollbar {
+        display: none; // For Chrome, Safari, and Opera
+      }
+    `}
+  </style>
+    <div className="w-16 h-1 bg-gray-200 rounded-full mx-auto mb-4 mt-3"></div>
+    <h2 className=" text-[#5C5C5C] text-xl font-bold mb-4 mt-5">
+      Sarfy Soudagar is on the way
+    </h2>
 
-{/* <TileLayer
-  url="https://{s}.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png"
-  attribution='<a href="https://github.com/cyclosm/cyclosm-cartocss-style/releases" title="CyclOSM - Open Bicycle render">CyclOSM</a> | Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-  maxZoom={20}
-/> */}
-
-{/* <TileLayer
-  url="https://tile.jawg.io/jawg-streets/{z}/{x}/{y}{r}.png?access-token=<your accessToken>"
-  attribution='<a href="https://jawg.io" title="Tiles Courtesy of Jawg Maps" target="_blank">&copy; <b>Jawg</b>Maps</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-  minZoom={0}
-  maxZoom={22}
-/> */}
-
-
-
-{/* <TileLayer
-  url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
-  attribution='Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
-  maxZoom={20}
-/> */}
-
-
-
-
-
-
-
-          {/* Commenting out RouteFinder since we are using coordinates from the server */}
-          {/* <RouteFinder origin={origin} destination={destination} setRoutePath={setRoutePath} /> */}
-          <MapCenterUpdater center={markerPos ? markerPos.latlng : origin} />
-          {markerPos && <Marker position={markerPos.latlng} icon={carIcon(markerPos.rotation)} />}
-          {routePath.length > 0 && <Polyline positions={routePath} color="#0000FF" weight={5} />}
-          {traveledPath.length > 0 && <Polyline positions={traveledPath} color="#36454F" weight={5} />}
-        </MapContainer>
-        <div className="absolute bottom-0 w-full bg-white rounded-t-3xl p-4 shadow-lg z-10 "style={{ fontFamily: 'DM Sans, sans-serif' }}>
-      <div className="w-16 h-1 bg-gray-200 rounded-full mx-auto mb-4 mt-3"></div>
-      <h2 className=" text-gray-600 text-xl font-bold mb-4 mt-5">Sarfy Soudagar is on the way</h2>
-      
-      <div className="flex gap-1 items-center justify-between mb-2 px-2 py-2">
-        <div className="flex items-center mr-3">
-          <div className="w-9 h-9 bg-black -m-2 rounded-full flex-shrink-0 px-0.5 py-1">
-          <img src={profileIcon} alt="Profile" className="mt-1" /></div>
-        </div>
-          <div className="flex-row -ml-6 -mr-4 ">
-          <div className="text-gray-400 text-sm font-medium flex  items-center font-bold ">
-             <img src={vectorIcon} alt="" className="h-4 mr-1 " /> Sarfy Soudagar
-           </div>
-            <div className="text-gray-500 text-sm font-semibold">Jim's Fencing Mooroolbark</div>
-         </div>
-        <div className="flex space-x-2 w-50 mr-4">
-          <button className="w-9 h-9 bg-blue-700 text-white rounded-lg flex items-center justify-center mr-1">
-            <img src={messageIcon} alt="Message" className="w-5 h-5" />
-          </button>
-          <button className="w-9 h-9 bg-green-700 text-white rounded-lg flex items-center justify-center">
-            <img src={callIcon} alt="Call" className="w-4 h-4" />
-          </button>
+    <div className="flex flex-wrap gap-1 items-center justify-between mb-2 px-2 py-2">
+      <div className="flex items-center mr-3 flex-shrink-0">
+        <div className="w-10 h-10 bg-black -m-2 rounded-full flex-shrink-0 px-0.5 py-1">
+          <img src={profileIcon} alt="Profile" className="mt-1" />
         </div>
       </div>
-
-      <hr className="w-full h-0.3 bg-gray-200  mx-auto mt-3"></hr>
-      
-      <div className=" border-gray-200 mt-4 pt-4 shadow-lg border-2 rounded-2xl px-4">
-        <div className="flex items-center ">
-          <img src={locationIcon} alt="Location" className="w-4 h-4" />
-          <div className="ml-1  text-gray-500 text-xs">Switchback Rd, Chirnside Park VIC
-            <br /> 3316, Australia
-          </div>
+      <div className="flex flex-col flex-1 ml-2">
+        <div className="text-[#A9A9AA] text-md flex items-center">
+          <img src={vectorIcon} alt="" className="h-4 mr-1" /> Sarfy Soudagar
         </div>
-        
-        <div className="flex justify-between items-center -mt-2">
-                <div className="flex items-center">
-                <img src={calendarIcon} alt="Date" className="w-4 h-4 -mt-4" />
-                  <div className="ml-1">
-                    <div className="text-gray-500 text-sm">Scheduled Time</div>
-                    <div className="text-gray-500 text-sm">11:30 AM - 12:30 PM</div>
-                  </div>
-                </div>
-                <div className="flex flex-col items-center justify-center border border-gray-500 mb-5">
-                  <div className="bg-blue-700 w-full text-white text-sm font-medium pl-8 py-1 px2">ETA</div>
-                  <div className="text-sm text-blue-700 px-4 py-1">11:30 AM</div>
-                </div>
-
+        <div className="text-[#5C5C5C] text-md font-semibold">
+          Jim's Fencing Mooroolbark
+        </div>
       </div>
+      <div className="flex space-x-2 mr-4">
+        <button className="w-9 h-9 bg-[#0055BB] text-white rounded-lg flex items-center justify-center">
+          <img src={messageIcon} alt="Message" className="w-5 h-5" />
+        </button>
+        <button className="w-9 h-9 bg-[#2D761B] text-white rounded-lg flex items-center justify-center">
+          <img src={callIcon} alt="Call" className="w-4 h-4" />
+        </button>
       </div>
     </div>
+
+    <hr className="w-full h-0.3 bg-gray-200  mx-auto mt-3"></hr>
+
+    <div className=" border-gray-200 mt-4 pt-4 shadow-lg border-2 rounded-2xl px-4">
+      <div className="flex items-center ">
+        <img src={locationIcon} alt="Location" className="w-4 h-4" />
+        <div className="ml-1  text-[#858585] text-sm">
+          Switchback Rd, Chirnside Park VIC
+          <br /> 3316, Australia
+        </div>
       </div>
+
+      <div className="flex justify-between items-center -mt-2">
+        <div className="flex items-center">
+          <img src={calendarIcon} alt="Date" className="w-4 h-4 -mt-4" />
+          <div className="ml-1">
+            <div className="text-[#858585] text-sm">Scheduled Time</div>
+            <div className="text-[#858585] text-sm">
+              11:30 AM - 12:30 PM
+            </div>
+          </div>
+        </div>
+        <div className="flex flex-col items-center justify-center border border-[#858585] mb-5">
+          <div className="bg-[#0055BB] w-full text-white text-sm font-medium pl-8 py-1 px2">
+            ETA
+          </div>
+          <div className="text-sm text-[#0055BB] px-4 py-1">11:30 AM</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
     </div>
   );
 };
 
 export default TrackingMap;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+// Below code Is For Goole Map, Do not change this code
 
 // import React, { useEffect, useState } from "react";
 // import { GoogleMap, Marker, useJsApiLoader, InfoWindow } from "@react-google-maps/api";
@@ -649,7 +680,7 @@ export default TrackingMap;
 //       },
 //     ],
 //   },
-//   {
+// {
 //     featureType: "all",
 //     elementType: "labels.icon",
 //     stylers: [
@@ -1011,9 +1042,6 @@ export default TrackingMap;
 
 // export default TrackingMap;
 
-
-
-
 // import React, { useEffect, useState } from "react";
 // import {
 //   GoogleMap,
@@ -1277,8 +1305,8 @@ export default TrackingMap;
 //     id: "google-map-script",
 //     googleMapsApiKey: googleMapsApiKey,
 //   });
-  // const [passedCoordinates, setPassedCoordinates] = useState([]);
-  // const [remainingCoordinates, setRemainingCoordinates] = useState(coordinates);
+// const [passedCoordinates, setPassedCoordinates] = useState([]);
+// const [remainingCoordinates, setRemainingCoordinates] = useState(coordinates);
 
 //   useEffect(() => {
 //     animateMarker();
@@ -1299,8 +1327,8 @@ export default TrackingMap;
 //         console.log(`Calculated Angle: ${angle}`);
 //       }
 //       setMarkerPos(coordinates[i]);
-      // setPassedCoordinates(coordinates.slice(0, i + 1));
-      // setRemainingCoordinates(coordinates.slice(i + 1));
+// setPassedCoordinates(coordinates.slice(0, i + 1));
+// setRemainingCoordinates(coordinates.slice(i + 1));
 //     }
 //   };
 
@@ -1350,20 +1378,20 @@ export default TrackingMap;
 //           }}
 //           onUnmount={() => setMap(null)}
 //         >
-          // <Polyline
-          //   path={passedCoordinates}
-          //   options={{
-          //     strokeColor: "#a9a9a9", // Black color for passed path
-          //     strokeWeight: 8,
-          //   }}
-          // />
-          // <Polyline
-          //   path={remainingCoordinates}
-          //   options={{
-          //     strokeColor: "#0000FF", // Blue color for remaining path
-          //     strokeWeight: 8,
-          //   }}
-          // />
+// <Polyline
+//   path={passedCoordinates}
+//   options={{
+//     strokeColor: "#a9a9a9", // Black color for passed path
+//     strokeWeight: 8,
+//   }}
+// />
+// <Polyline
+//   path={remainingCoordinates}
+//   options={{
+//     strokeColor: "#0000FF", // Blue color for remaining path
+//     strokeWeight: 8,
+//   }}
+// />
 
 // <Marker
 //   position={coordinates[coordinates.length - 1]}
