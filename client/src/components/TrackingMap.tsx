@@ -405,7 +405,7 @@ const MapCenterUpdater: React.FC<{ center: LatLngExpression }> = ({ center }) =>
   const map = useMap();
 
   useEffect(() => {
-    map.flyTo(center, 17); // Adjust this zoom level if necessary
+    map.flyTo(center, 16); // Adjust this zoom level if necessary
   }, [center, map]);
 
   return null;
@@ -419,8 +419,8 @@ const TrackingMap: React.FC = () => {
   const markerIndex = useRef(0);
   const socket = useSocket();
 
-  const origin: LatLngTuple = [12.916708, 77.610137];
-  const destination: LatLngTuple = [12.936948, 77.601563];
+  const origin: LatLngTuple = [-37.755854, 145.343223];
+  const destination: LatLngTuple = [-37.744539, 145.327138];
 
   useEffect(() => {
     if (socket) {
@@ -457,7 +457,7 @@ const TrackingMap: React.FC = () => {
         clearInterval(interval); // Stop the interval once the destination is reached
         setMarkerPos({ latlng: destination, rotation: calculateAngle(prevPos, destination) }); // Ensure the marker stops at the destination
       }
-    }, 3000); 
+    }, 500); 
   };
 
   return (
@@ -465,15 +465,60 @@ const TrackingMap: React.FC = () => {
       <div className="relative h-full w-full max-w-screen-sm mx-auto md:h-[720px] md:w-[390px] md:rounded-lg overflow-hidden bg-white shadow-lg">
       <MapContainer
           center={markerPos ? markerPos.latlng : origin}
-          zoom={25}
+          zoom={50}
           style={{ ...containerStyle, zIndex: 1 }}
           zoomControl={false} 
           attributionControl={true}
-        >
+          >
           <TileLayer
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, &copy; <a href="https://www.mapbox.com/about/maps/">Mapbox</a>'
+            url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager_labels_under/{z}/{x}/{y}{r}.png"
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+            subdomains={['a', 'b', 'c', 'd']}
+            maxZoom={20}
           />
+          {/* <TileLayer
+            url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}"
+            attribution='Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ, TomTom, Intermap, iPC, USGS, FAO, NPS, NRCAN, GeoBase, Kadaster NL, Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), and the GIS User Community'
+          /> */}
+{/* <TileLayer
+  url="https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.{ext}"
+  attribution='&copy; <a href="https://www.stadiamaps.com/" target="_blank">Stadia Maps</a> &copy; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+  ext='png'
+/> */}
+
+{/* <TileLayer
+  url="https://tiles.stadiamaps.com/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.{ext}"
+  attribution='&copy; <a href="https://www.stadiamaps.com/" target="_blank">Stadia Maps</a> &copy; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+  ext='png'
+/> */}
+
+{/* <TileLayer
+  url="https://{s}.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png"
+  attribution='<a href="https://github.com/cyclosm/cyclosm-cartocss-style/releases" title="CyclOSM - Open Bicycle render">CyclOSM</a> | Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+  maxZoom={20}
+/> */}
+
+{/* <TileLayer
+  url="https://tile.jawg.io/jawg-streets/{z}/{x}/{y}{r}.png?access-token=<your accessToken>"
+  attribution='<a href="https://jawg.io" title="Tiles Courtesy of Jawg Maps" target="_blank">&copy; <b>Jawg</b>Maps</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+  minZoom={0}
+  maxZoom={22}
+/> */}
+
+
+
+{/* <TileLayer
+  url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+  attribution='Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+  maxZoom={20}
+/> */}
+
+
+
+
+
+
+
           {/* Commenting out RouteFinder since we are using coordinates from the server */}
           {/* <RouteFinder origin={origin} destination={destination} setRoutePath={setRoutePath} /> */}
           <MapCenterUpdater center={markerPos ? markerPos.latlng : origin} />
