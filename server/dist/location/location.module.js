@@ -19,10 +19,12 @@ exports.LocationModule = LocationModule;
 exports.LocationModule = LocationModule = __decorate([
     (0, common_1.Module)({
         imports: [
-            mongoose_1.MongooseModule.forFeature([{ name: coordinate_schema_1.Coordinate.name, schema: coordinate_schema_1.CoordinateSchema }]),
+            mongoose_1.MongooseModule.forFeature([
+                { name: coordinate_schema_1.Coordinate.name, schema: coordinate_schema_1.CoordinateSchema },
+            ]),
         ],
         controllers: [location_controller_1.LocationController],
-        providers: [location_service_1.LocationService, location_gateway_1.LocationGateway],
+        providers: [location_service_1.LocationService, location_gateway_1.SocketGateway],
         exports: [location_service_1.LocationService],
     })
 ], LocationModule);

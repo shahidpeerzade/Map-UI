@@ -9,31 +9,25 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.LocationGateway = void 0;
+exports.SocketGateway = void 0;
 const websockets_1 = require("@nestjs/websockets");
 const socket_io_1 = require("socket.io");
-let LocationGateway = class LocationGateway {
-    handleConnection(client) {
-        console.log(`Client connected: ${client.id}`);
-    }
-    handleDisconnect(client) {
-        console.log(`Client disconnected: ${client.id}`);
-    }
+let SocketGateway = class SocketGateway {
     emitCoordinates(data) {
-        console.log('Emitting coordinates:', data);
         this.server.emit('coordinates', data);
     }
 };
-exports.LocationGateway = LocationGateway;
+exports.SocketGateway = SocketGateway;
 __decorate([
     (0, websockets_1.WebSocketServer)(),
     __metadata("design:type", socket_io_1.Server)
-], LocationGateway.prototype, "server", void 0);
-exports.LocationGateway = LocationGateway = __decorate([
+], SocketGateway.prototype, "server", void 0);
+exports.SocketGateway = SocketGateway = __decorate([
     (0, websockets_1.WebSocketGateway)({
-        cors: {
-            origin: '*',
-        },
+        cors: '*',
+        allowEIO3: true,
+        path: '/ws/',
+        transports: ['polling', 'websocket'],
     })
-], LocationGateway);
+], SocketGateway);
 //# sourceMappingURL=location.gateway.js.map

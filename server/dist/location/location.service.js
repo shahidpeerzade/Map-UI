@@ -38,6 +38,6 @@ exports.LocationService = LocationService = __decorate([
     (0, common_1.Injectable)(),
     __param(0, (0, mongoose_1.InjectModel)(coordinate_schema_1.Coordinate.name)),
     __metadata("design:paramtypes", [mongoose_2.Model,
-        location_gateway_1.LocationGateway])
+        location_gateway_1.SocketGateway])
 ], LocationService);
 //# sourceMappingURL=location.service.js.map

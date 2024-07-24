@@ -21,7 +21,10 @@ let LocationController = class LocationController {
     }
     async handleCoordinates(body, res) {
         await this.locationService.storeCoordinates(body);
-        return res.status(200).json({ message: 'Coordinates stored and emitted successfully' });
+        return res.status(200).json({
+            success: true,
+            message: 'Data inserted successfully'
+        });
     }
 };
 exports.LocationController = LocationController;
