@@ -449,19 +449,22 @@ const TrackingMap: React.FC = () => {
   const [estimatedTime, setEstimatedTime] = useState<string>("");
   const markerIndex = useRef(0);
   const socket = useSocket();
+  const userID = "1";
 
-  const origin: LatLngTuple = [-37.755854, 145.343223];
+  const origin: LatLngTuple = [-37.832594, 145.067742];
   const destination: LatLngTuple = [-37.744539, 145.327138];
 
   useEffect(() => {
     if (socket) {
-      socket.on("coordinates", (data: { lat: number; lng: number }[]) => {
-        const path = data.map((coord) => [coord.lat, coord.lng] as LatLngTuple);
-        setRoutePath(path);
-        console.log("Coordinates received:", path); // Debug log
+      socket.on("coordinates", (data: { userID: string; lat: number; lng: number }) => {
+        if (data.userID === userID) {
+          const newCoordinate: LatLngTuple = [data.lat, data.lng];
+          setRoutePath((prevPath) => [...prevPath, newCoordinate]);
+          console.log("Coordinate received:", newCoordinate); // Debug log
+        }
       });
     }
-  }, [socket]);
+  }, [socket, userID]);
 
   useEffect(() => {
     if (routePath.length > 0) {
