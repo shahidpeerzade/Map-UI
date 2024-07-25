@@ -24,10 +24,11 @@ let LocationService = class LocationService {
         this.locationGateway = locationGateway;
     }
     async storeCoordinates(coordinates) {
+        coordinates['userID'] = '1';
         const newCoordinate = new this.coordinateModel(coordinates);
         await newCoordinate.save();
         this.locationGateway.emitCoordinates({
-            userID: coordinates.userID,
+            userID: '1',
             lat: coordinates.lat,
             lng: coordinates.lng,
         });

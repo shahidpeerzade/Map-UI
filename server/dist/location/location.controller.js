@@ -23,7 +23,7 @@ let LocationController = class LocationController {
         await this.locationService.storeCoordinates(body);
         return res.status(200).json({
             success: true,
-            message: 'Data inserted successfully'
+            message: 'Data inserted successfully',
         });
     }
 };

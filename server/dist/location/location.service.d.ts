@@ -6,7 +6,6 @@ export declare class LocationService {
     private readonly locationGateway;
     constructor(coordinateModel: Model<CoordinateDocument>, locationGateway: SocketGateway);
     storeCoordinates(coordinates: {
-        userID: string;
         lat: number;
         lng: number;
     }): Promise<void>;
