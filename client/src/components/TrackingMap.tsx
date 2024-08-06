@@ -1,9 +1,6 @@
-import React, { useEffect, useState} from "react";
-import {
-  MapContainer,
-  Polyline,
-  TileLayer,
-} from "react-leaflet";
+import React, { useEffect, useState, useRef } from "react";
+import { MapContainer, Polyline, TileLayer, useMap } from "react-leaflet";
+import L, { LatLngTuple } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "leaflet-routing-machine";
 import "tailwindcss/tailwind.css";
@@ -15,26 +12,150 @@ import profileIcon from "../assets/icon/Profile.png";
 import vectorIcon from "../assets/icon/Vector.png";
 import CarMarker from "./CarMarker";
 import { io } from "socket.io-client";
+import axios from "axios";
 
 const containerStyle = {
   width: "100%",
   height: "70%",
 };
 
-// const socket = io("http://localhost:3000/", { path: "/ws" });
-const socket = io("http://34.234.158.56:9000/", { path: "/ws" });
+const socket = io("http://localhost:3000/", { path: "/ws" });
+// const socket = io("https://amused-mullet-absolute.ngrok-free.app/", {
+//   path: "/ws",
+// });
+// const socket = io("http://34.234.158.56:9000/", { path: "/ws" });
 
 interface LatLng {
   lat: number;
   lng: number;
 }
 
-const TrackingMap: React.FC = () => {
-  const [_isConnected, setIsConnected] = useState<boolean | null>(null);
-  const [currentTrack, setCurrentTrack] = useState<LatLng>({ lat: 16.4409089, lng: 74.3636716 });
-  const [route, setRoute] = useState<[number, number][]>([]);
+interface TrackingMapProps {
+  userId: string;
+}
+
+const RouteFinder: React.FC<{
+  origin: L.LatLngTuple;
+  destination: L.LatLngTuple;
+  deviation?: L.LatLngTuple | undefined;
+  setRoutePath: (path: L.LatLngTuple[]) => void;
+}> = ({ origin, destination, deviation, setRoutePath }) => {
+  const map = useMap();
+  const routingControlRef = useRef<L.Routing.Control | null>(null);
 
   useEffect(() => {
+    console.log("RouteFinder useEffect:", { origin, destination, deviation });
+
+    if (!origin || !destination) {
+      console.error("Origin or Destination is not set correctly.");
+      return;
+    }
+
+    const waypoints = [L.latLng(origin)];
+    if (deviation) {
+      waypoints.push(L.latLng(deviation));
+    }
+    waypoints.push(L.latLng(destination));
+
+    try {
+      routingControlRef.current = L.Routing.control({
+        waypoints,
+        routeWhileDragging: true,
+        addWaypoints: false,
+      }).addTo(map);
+
+      routingControlRef.current.on("routesfound", function (e) {
+        const routes = e.routes;
+        if (routes.length > 0) {
+          const route = routes[0];
+          const path = route.coordinates.map(
+            (coord: { lat: number; lng: number }) =>
+              [coord.lat, coord.lng] as L.LatLngTuple
+          );
+          setRoutePath(path);
+          map.fitBounds(route.bounds);
+        }
+      });
+
+      routingControlRef.current.on("routingerror", function (e) {
+        console.error("Routing error:", e);
+      });
+    } catch (error) {
+      console.error("Error initializing routing control:", error);
+    }
+
+    return () => {
+      if (routingControlRef.current) {
+        routingControlRef.current.getPlan().setWaypoints([]);
+        map.removeControl(routingControlRef.current);
+        routingControlRef.current = null;
+      }
+    };
+  }, [map, origin, destination, deviation, setRoutePath]);
+
+  return null;
+};
+
+const findClosestPoint = (
+  target: LatLngTuple,
+  points: LatLngTuple[]
+): LatLngTuple => {
+  let closestPoint = points[0];
+  let minDistance = L.latLng(target).distanceTo(L.latLng(points[0]));
+
+  for (let i = 1; i < points.length; i++) {
+    const distance = L.latLng(target).distanceTo(L.latLng(points[i]));
+    if (distance < minDistance) {
+      closestPoint = points[i];
+      minDistance = distance;
+    }
+  }
+
+  return closestPoint;
+};
+
+const TrackingMap: React.FC<TrackingMapProps> = ({ userId }) => {
+  const [_isConnected, setIsConnected] = useState<boolean | null>(null);
+  const [currentTrack, setCurrentTrack] = useState<LatLng>({
+    lat: 16.82676,
+    lng: 75.738087,
+  });
+  const [route, setRoute] = useState<L.LatLngTuple[]>([]);
+  const [travelledRoute, setTravelledRoute] = useState<L.LatLngTuple[]>([]);
+  const [deviation, setDeviation] = useState<L.LatLngTuple | undefined>(undefined);
+  const [origin, setOrigin] = useState<L.LatLngTuple | null>(null);
+  const [destination, setDestination] = useState<L.LatLngTuple | null>(null);
+
+  const fetchRouteData = async () => {
+    console.log(userId);
+    try {
+      const response = await axios.get(
+        `http://localhost:3000/coordinates/route/${userId}`
+      );
+      console.log("API Response:", response);
+      if (response.data && response.data.success) {
+        console.log("Route Data:", response.data.data);
+        setOrigin([
+          response.data.data.origin.lat,
+          response.data.data.origin.lng,
+        ]);
+        setDestination([
+          response.data.data.destination.lat,
+          response.data.data.destination.lng,
+        ]);
+      } else {
+        console.error("Error: response.data.success is false");
+        alert("Error fetching route data...");
+      }
+    } catch (error) {
+      console.error("Error fetching route data:", error);
+      alert("Error fetching route data");
+    }
+  };
+
+  useEffect(() => {
+    fetchRouteData();
+
     const onConnect = () => {
       setIsConnected(true);
     };
@@ -44,9 +165,18 @@ const TrackingMap: React.FC = () => {
     };
 
     const locEvent = (value: LatLng) => {
+      console.log("value from server:", value);
+      const currentPos: LatLngTuple = [value.lat, value.lng];
+      const closestPoint = findClosestPoint(currentPos, route);
 
-      setCurrentTrack({ lat: value.lat, lng: value.lng });
-      setRoute((prevPath) => [...prevPath, [value.lat, value.lng]]);
+      const distance = L.latLng(currentPos).distanceTo(L.latLng(closestPoint));
+      if (distance > 50) {
+        setDeviation(currentPos);
+        setRoute([]); // Clear the old route
+      }
+
+      setCurrentTrack({ lat: closestPoint[0], lng: closestPoint[1] });
+      setTravelledRoute((prevPath: any): any => [...prevPath, closestPoint]);
     };
 
     socket.on("connect", onConnect);
@@ -58,28 +188,40 @@ const TrackingMap: React.FC = () => {
       socket.off("disconnect", onDisconnect);
       socket.off("coordinates", locEvent);
     };
-  }, [socket]);
+  }, [route, userId]);
+
+  if (!origin || !destination) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="tracking-map-container flex justify-center items-center h-screen bg-white">
       <div className="relative h-full w-full max-w-screen-sm mx-auto md:h-[835px] md:w-[439px] md:rounded-lg overflow-hidden bg-white shadow-lg">
-      <MapContainer
+        <MapContainer
           zoom={15}
           style={{ ...containerStyle, zIndex: 1 }}
-          center={[16.4409089, 74.3636716]}
+          center={origin}
           minZoom={5}
           zoomControl={false}
           attributionControl={true}
         >
-         <TileLayer
+          <TileLayer
             url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager_labels_under/{z}/{x}/{y}{r}.png"
             attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
             subdomains={["a", "b", "c", "d"]}
             maxZoom={20}
           />
+          <RouteFinder
+            origin={origin}
+            destination={destination}
+            deviation={deviation}
+            setRoutePath={setRoute}
+          />
+          <Polyline positions={route} color="#393939" />
           <CarMarker data={currentTrack ?? {}} />
-          <Polyline positions={route} color="#393939"/>
+          <Polyline positions={travelledRoute} color="red" />
         </MapContainer>
+
         <div
           className="absolute bottom-0 w-full bg-[#FFFFFF] p-4 shadow-lg z-10 h-[40%] overflow-y-auto"
           style={{

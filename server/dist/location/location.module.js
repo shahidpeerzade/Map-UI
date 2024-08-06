@@ -13,6 +13,7 @@ const location_service_1 = require("./location.service");
 const location_controller_1 = require("./location.controller");
 const location_gateway_1 = require("./location.gateway");
 const coordinate_schema_1 = require("./schemas/coordinate.schema");
+const routeData_schema_1 = require("./schemas/routeData.schema");
 let LocationModule = class LocationModule {
 };
 exports.LocationModule = LocationModule;
@@ -21,6 +22,7 @@ exports.LocationModule = LocationModule = __decorate([
         imports: [
             mongoose_1.MongooseModule.forFeature([
                 { name: coordinate_schema_1.Coordinate.name, schema: coordinate_schema_1.CoordinateSchema },
+                { name: routeData_schema_1.RouteData.name, schema: routeData_schema_1.RouteDataSchema },
             ]),
         ],
         controllers: [location_controller_1.LocationController],

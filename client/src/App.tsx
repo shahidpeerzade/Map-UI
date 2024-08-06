@@ -1,9 +1,11 @@
 import React from 'react';
-import TrackingMap from './components/TrackingMap';
+import UserIdPage from './components/UserIdPage';
 
 const App: React.FC = () => {
   return (
-      <TrackingMap />
+    <div className="App">
+      <UserIdPage />
+    </div>
   );
 };
 

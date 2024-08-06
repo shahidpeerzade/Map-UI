@@ -8,4 +8,13 @@ export declare class LocationController {
         lat: number;
         lng: number;
     }, res: Response): Promise<Response<any, Record<string, any>>>;
+    handleRoute(body: {
+        origin: string;
+        destination: string;
+        userID: string;
+    }, res: Response): Promise<Response<any, Record<string, any>>>;
+    verifyUserID(body: {
+        userID: string;
+    }, res: Response): Promise<Response<any, Record<string, any>>>;
+    getRouteData(userID: string, res: Response): Promise<Response<any, Record<string, any>>>;
 }

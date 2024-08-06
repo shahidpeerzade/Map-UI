@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { LeafletTrackingMarker } from "react-leaflet-tracking-marker";
 import L from "leaflet";
+// import CarIcon from '../assets/icon/car.png';
+
 interface CarMarkerProps {
   data: {
     lat: number;

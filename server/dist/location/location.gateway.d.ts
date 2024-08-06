@@ -6,4 +6,15 @@ export declare class SocketGateway {
         lat: number;
         lng: number;
     }): void;
+    emitRouteData(data: {
+        userID: string;
+        origin: {
+            lat: number;
+            lng: number;
+        };
+        destination: {
+            lat: number;
+            lng: number;
+        };
+    }): void;
 }

@@ -20,11 +20,61 @@ let LocationController = class LocationController {
         this.locationService = locationService;
     }
     async handleCoordinates(body, res) {
+        console.log(body.userID, body.lat, body.lng);
         await this.locationService.storeCoordinates(body);
         return res.status(200).json({
             success: true,
             message: 'Data inserted successfully',
         });
+    }
+    async handleRoute(body, res) {
+        await this.locationService.storeRouteData(body);
+        return res.status(200).json({
+            success: true,
+            message: 'Route data inserted successfully',
+        });
+    }
+    async verifyUserID(body, res) {
+        const isValid = await this.locationService.verifyUserID(body.userID);
+        if (isValid) {
+            return res.status(200).json({
+                success: true,
+                message: 'User ID verified successfully',
+            });
+        }
+        else {
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid User ID',
+            });
+        }
+    }
+    async getRouteData(userID, res) {
+        try {
+            console.log(`Received request for route data with userID: ${userID}`);
+            const routeData = await this.locationService.getRouteData(userID);
+            if (routeData) {
+                return res.status(200).json({
+                    success: true,
+                    message: 'User ID verified successfully',
+                    data: routeData,
+                });
+            }
+            else {
+                console.error('No route data found for the given user ID');
+                return res.status(404).json({
+                    success: false,
+                    message: 'No route data found for the given user ID',
+                });
+            }
+        }
+        catch (error) {
+            console.error('Error fetching route data:', error);
+            return res.status(500).json({
+                success: false,
+                message: 'Internal server error',
+            });
+        }
     }
 };
 exports.LocationController = LocationController;
@@ -36,6 +86,30 @@ __decorate([
     __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", Promise)
 ], LocationController.prototype, "handleCoordinates", null);
+__decorate([
+    (0, common_1.Post)('route'),
+    __param(0, (0, common_1.Body)()),
+    __param(1, (0, common_1.Res)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", Promise)
+], LocationController.prototype, "handleRoute", null);
+__decorate([
+    (0, common_1.Post)('verify'),
+    __param(0, (0, common_1.Body)()),
+    __param(1, (0, common_1.Res)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object, Object]),
+    __metadata("design:returntype", Promise)
+], LocationController.prototype, "verifyUserID", null);
+__decorate([
+    (0, common_1.Get)('route/:userID'),
+    __param(0, (0, common_1.Param)('userID')),
+    __param(1, (0, common_1.Res)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", Promise)
+], LocationController.prototype, "getRouteData", null);
 exports.LocationController = LocationController = __decorate([
     (0, common_1.Controller)('coordinates'),
     __metadata("design:paramtypes", [location_service_1.LocationService])
