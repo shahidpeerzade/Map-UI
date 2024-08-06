@@ -155,40 +155,47 @@ const TrackingMap: React.FC<TrackingMapProps> = ({ userId }) => {
 
   useEffect(() => {
     fetchRouteData();
-
+  
     const onConnect = () => {
       setIsConnected(true);
     };
-
+  
     const onDisconnect = () => {
       setIsConnected(false);
     };
-
-    const locEvent = (value: LatLng) => {
-      console.log("value from server:", value);
-      const currentPos: LatLngTuple = [value.lat, value.lng];
+  
+    const locEvent = (data: { userID: string; lat: number; lng: number }) => {
+      const { userID, lat, lng } = data;
+      if (userID !== userId) {
+        console.error("User ID mismatch: received", userID, "expected", userId);
+        return;
+      }
+  
+      console.log("value from server:", { lat, lng });
+      const currentPos: LatLngTuple = [lat, lng];
       const closestPoint = findClosestPoint(currentPos, route);
-
+  
       const distance = L.latLng(currentPos).distanceTo(L.latLng(closestPoint));
       if (distance > 50) {
         setDeviation(currentPos);
         setRoute([]); // Clear the old route
       }
-
+  
       setCurrentTrack({ lat: closestPoint[0], lng: closestPoint[1] });
-      setTravelledRoute((prevPath: any): any => [...prevPath, closestPoint]);
+      setTravelledRoute((prevPath: LatLngTuple[]): LatLngTuple[] => [...prevPath, closestPoint]);
     };
-
+  
     socket.on("connect", onConnect);
     socket.on("disconnect", onDisconnect);
     socket.on("coordinates", locEvent);
-
+  
     return () => {
       socket.off("connect", onConnect);
       socket.off("disconnect", onDisconnect);
       socket.off("coordinates", locEvent);
     };
   }, [route, userId]);
+  
 
   if (!origin || !destination) {
     return <div>Loading...</div>;
