@@ -52,7 +52,7 @@ let LocationService = class LocationService {
     }
     async verifyUserID(userID) {
         const routeData = await this.routeDataModel.findOne({ userID }).exec();
-        return !!routeData;
+        return Boolean(routeData);
     }
     async convertToLatLng(address) {
         const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`;

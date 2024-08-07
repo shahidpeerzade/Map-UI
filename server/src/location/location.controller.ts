@@ -6,7 +6,7 @@ import { Response } from 'express';
 export class LocationController {
   constructor(private readonly locationService: LocationService) {}
 
-  @Post()
+  @Post('/')
   async handleCoordinates(
     @Body() body: { userID: string; lat: number; lng: number },
     @Res() res: Response,
@@ -19,7 +19,7 @@ export class LocationController {
     });
   }
 
-  @Post('route')
+  @Post('/route')
   async handleRoute(
     @Body() body: { origin: string; destination: string; userID: string },
     @Res() res: Response,
@@ -31,7 +31,7 @@ export class LocationController {
       });
   }
 
-  @Post('verify')
+  @Post('/verify')
   async verifyUserID(
     @Body() body: { userID: string },
     @Res() res: Response,
@@ -50,7 +50,7 @@ export class LocationController {
     }
   }
 
-  @Get('route/:userID')
+  @Get('/route/:userID')
   async getRouteData(@Param('userID') userID: string, @Res() res: Response) {
     try {
       console.log(`Received request for route data with userID: ${userID}`);

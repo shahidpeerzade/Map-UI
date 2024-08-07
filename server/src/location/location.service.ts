@@ -49,8 +49,8 @@ export class LocationService {
 
   async verifyUserID(userID: string): Promise<boolean> {
     const routeData = await this.routeDataModel.findOne({ userID }).exec();
-    return !!routeData;
-  }
+    return Boolean(routeData);
+  }  
 
   
   private async convertToLatLng(address: string): Promise<{ lat: number; lng: number }> {

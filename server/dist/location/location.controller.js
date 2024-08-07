@@ -79,7 +79,7 @@ let LocationController = class LocationController {
 };
 exports.LocationController = LocationController;
 __decorate([
-    (0, common_1.Post)(),
+    (0, common_1.Post)('/'),
     __param(0, (0, common_1.Body)()),
     __param(1, (0, common_1.Res)()),
     __metadata("design:type", Function),
@@ -87,7 +87,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], LocationController.prototype, "handleCoordinates", null);
 __decorate([
-    (0, common_1.Post)('route'),
+    (0, common_1.Post)('/route'),
     __param(0, (0, common_1.Body)()),
     __param(1, (0, common_1.Res)()),
     __metadata("design:type", Function),
@@ -95,7 +95,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], LocationController.prototype, "handleRoute", null);
 __decorate([
-    (0, common_1.Post)('verify'),
+    (0, common_1.Post)('/verify'),
     __param(0, (0, common_1.Body)()),
     __param(1, (0, common_1.Res)()),
     __metadata("design:type", Function),
@@ -103,7 +103,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], LocationController.prototype, "verifyUserID", null);
 __decorate([
-    (0, common_1.Get)('route/:userID'),
+    (0, common_1.Get)('/route/:userID'),
     __param(0, (0, common_1.Param)('userID')),
     __param(1, (0, common_1.Res)()),
     __metadata("design:type", Function),

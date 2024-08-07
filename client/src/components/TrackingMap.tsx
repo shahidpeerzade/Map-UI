@@ -19,11 +19,11 @@ const containerStyle = {
   height: "70%",
 };
 
-const socket = io("http://localhost:3000/", { path: "/ws" });
+// const socket = io("http://localhost:3000/", { path: "/ws" });
 // const socket = io("https://amused-mullet-absolute.ngrok-free.app/", {
 //   path: "/ws",
 // });
-// const socket = io("http://34.234.158.56:9000/", { path: "/ws" });
+const socket = io("http://34.234.158.56:3000/", { path: "/ws" });
 
 interface LatLng {
   lat: number;
@@ -99,19 +99,21 @@ const RouteFinder: React.FC<{
 const findClosestPoint = (
   target: LatLngTuple,
   points: LatLngTuple[]
-): LatLngTuple => {
+): { closestPoint: LatLngTuple; index: number } => {
   let closestPoint = points[0];
   let minDistance = L.latLng(target).distanceTo(L.latLng(points[0]));
+  let index = 0;
 
   for (let i = 1; i < points.length; i++) {
     const distance = L.latLng(target).distanceTo(L.latLng(points[i]));
     if (distance < minDistance) {
       closestPoint = points[i];
       minDistance = distance;
+      index = i;
     }
   }
 
-  return closestPoint;
+  return { closestPoint, index };
 };
 
 const TrackingMap: React.FC<TrackingMapProps> = ({ userId }) => {
@@ -121,7 +123,6 @@ const TrackingMap: React.FC<TrackingMapProps> = ({ userId }) => {
     lng: 75.738087,
   });
   const [route, setRoute] = useState<L.LatLngTuple[]>([]);
-  const [travelledRoute, setTravelledRoute] = useState<L.LatLngTuple[]>([]);
   const [deviation, setDeviation] = useState<L.LatLngTuple | undefined>(undefined);
   const [origin, setOrigin] = useState<L.LatLngTuple | null>(null);
   const [destination, setDestination] = useState<L.LatLngTuple | null>(null);
@@ -130,7 +131,7 @@ const TrackingMap: React.FC<TrackingMapProps> = ({ userId }) => {
     console.log(userId);
     try {
       const response = await axios.get(
-        `http://localhost:3000/coordinates/route/${userId}`
+        `http://34.234.158.56:3000/coordinates/route/${userId}`
       );
       console.log("API Response:", response);
       if (response.data && response.data.success) {
@@ -155,47 +156,48 @@ const TrackingMap: React.FC<TrackingMapProps> = ({ userId }) => {
 
   useEffect(() => {
     fetchRouteData();
-  
+
     const onConnect = () => {
       setIsConnected(true);
     };
-  
+
     const onDisconnect = () => {
       setIsConnected(false);
     };
-  
+
     const locEvent = (data: { userID: string; lat: number; lng: number }) => {
       const { userID, lat, lng } = data;
       if (userID !== userId) {
         console.error("User ID mismatch: received", userID, "expected", userId);
         return;
       }
-  
+
       console.log("value from server:", { lat, lng });
       const currentPos: LatLngTuple = [lat, lng];
-      const closestPoint = findClosestPoint(currentPos, route);
-  
+      const { closestPoint, index } = findClosestPoint(currentPos, route);
+
       const distance = L.latLng(currentPos).distanceTo(L.latLng(closestPoint));
       if (distance > 50) {
         setDeviation(currentPos);
-        setRoute([]); // Clear the old route
+        setRoute([]);
+      } else {
+        const remainingRoute = route.slice(index);
+        setRoute(remainingRoute);
       }
-  
+
       setCurrentTrack({ lat: closestPoint[0], lng: closestPoint[1] });
-      setTravelledRoute((prevPath: LatLngTuple[]): LatLngTuple[] => [...prevPath, closestPoint]);
     };
-  
+
     socket.on("connect", onConnect);
     socket.on("disconnect", onDisconnect);
     socket.on("coordinates", locEvent);
-  
+
     return () => {
       socket.off("connect", onConnect);
       socket.off("disconnect", onDisconnect);
       socket.off("coordinates", locEvent);
     };
   }, [route, userId]);
-  
 
   if (!origin || !destination) {
     return <div>Loading...</div>;
@@ -213,10 +215,8 @@ const TrackingMap: React.FC<TrackingMapProps> = ({ userId }) => {
           attributionControl={true}
         >
           <TileLayer
-            url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager_labels_under/{z}/{x}/{y}{r}.png"
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-            subdomains={["a", "b", "c", "d"]}
-            maxZoom={20}
+            attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
           <RouteFinder
             origin={origin}
@@ -226,7 +226,6 @@ const TrackingMap: React.FC<TrackingMapProps> = ({ userId }) => {
           />
           <Polyline positions={route} color="#393939" />
           <CarMarker data={currentTrack ?? {}} />
-          <Polyline positions={travelledRoute} color="red" />
         </MapContainer>
 
         <div
