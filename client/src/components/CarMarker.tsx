@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { LeafletTrackingMarker } from "react-leaflet-tracking-marker";
 import L from "leaflet";
-// import CarIcon from '../assets/icon/car.png';
+import CarIcon from '../assets/icon/Group.png';
 
 interface CarMarkerProps {
   data: {
@@ -11,10 +11,10 @@ interface CarMarkerProps {
 }
 
 const icon = L.icon({
-  iconSize: [45, 45],
+  iconSize: [35, 22],
   popupAnchor: [2, -20],
-  iconUrl:
-    "https://mysql-backup-base.s3.amazonaws.com/New%20Project%20%281%29.png",
+  iconUrl: CarIcon,
+    // "https://mysql-backup-base.s3.amazonaws.com/New%20Project%20%281%29.png",
 });
 
 const CarMarker: React.FC<CarMarkerProps> = ({ data }) => {

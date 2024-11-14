@@ -10,8 +10,8 @@ const UserIdPage: React.FC = () => {
     e.preventDefault();
     if (userId) {
       try {
-        // const response = await axios.post('http://localhost:3000/coordinates/verify/', { userID: userId });
-        const response = await axios.post('http://34.234.158.56:3000/coordinates/verify/', { userID: userId });
+        const response = await axios.post('http://localhost:3000/coordinates/verify/', { userID: userId });
+        // const response = await axios.post('http://3.141.137.176:3000/coordinates/verify/', { userID: userId });
         if (response.data.success) {
           setIsValid(true);
         } else {

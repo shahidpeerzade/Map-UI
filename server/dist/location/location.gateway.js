@@ -15,7 +15,7 @@ const socket_io_1 = require("socket.io");
 let SocketGateway = class SocketGateway {
     emitCoordinates(data) {
         this.server.emit('coordinates', data);
-        console.log(`emitted data ${data.lat}`);
+        console.log(`emitted data ${data.userID}`);
     }
     emitRouteData(data) {
         this.server.emit('routeData', data);
